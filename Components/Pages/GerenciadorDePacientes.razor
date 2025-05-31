@@ -1,0 +1,92 @@
+﻿@page "/pacientes"
+@inject AppDbContext DbContext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<div class="home-container">
+    <div class="box">
+        <h3 style="text-align: center;">Pacientes Ativos</h3>
+
+        <div class="pacientes-lista">
+            @if (pacientes == null)
+            {
+                <p>Carregando pacientes...</p>
+            }
+            else if (!pacientes.Any())
+            {
+                <p>Não há pacientes ativos no momento.</p>
+            }
+            else
+            {
+                @foreach (var paciente in pacientes)
+                {
+                    <div class="paciente-card @(GetClasseGravidade(paciente.Gravidade))">
+                        <h4>@paciente.Nome</h4>
+                        <p><strong>CPF:</strong> @paciente.Cpf</p>
+                        <p><strong>Idade:</strong> @(CalcularIdade(paciente.DataNascimento))</p>
+                        <p><strong>Sexo:</strong> @paciente.Sexo</p>
+                        <p><strong>Gravidade:</strong> @paciente.Gravidade</p>
+
+                        <button class="btn" @onclick="@(() => IrParaDetalhes(paciente.Cpf))">Gerenciar</button>
+                    </div>
+                }
+            }
+        </div>
+
+        <button class="bottom-right-button" @onclick="IrParaCadastroPaciente">
+            Admitir paciente
+        </button>
+
+        <button class="bottom-left-button" @onclick="VoltarParaMenu">
+            Sair
+        </button>
+    </div>
+</div>
+
+
+@code {
+    List<Paciente> pacientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pacientes = await DbContext.Pacientes
+            .Where(p => p.Ativo == true)
+            .ToListAsync();
+    }
+
+    private void VoltarParaMenu()
+    {
+        Navigation.NavigateTo($"/menu");
+    }
+
+    void IrParaDetalhes(string cpf)
+    {
+        Navigation.NavigateTo($"/paciente/{cpf}");
+    }
+
+    void IrParaCadastroPaciente()
+    {
+        Navigation.NavigateTo("/admissao");
+    }
+
+    int CalcularIdade(DateTime dataNascimento)
+    {
+        var hoje = DateTime.Today;
+        var idade = hoje.Year - dataNascimento.Year;
+        if (dataNascimento.Date > hoje.AddYears(-idade))
+            idade--;
+        return idade;
+    }
+
+    private string GetClasseGravidade(string gravidade)
+    {
+        return gravidade switch
+        {
+            "Leve" => "paciente-leve",
+            "Moderada" => "paciente-moderada",
+            "Grave" => "paciente-grave",
+            _ => ""
+        };
+    }
+}

@@ -1,0 +1,51 @@
+﻿@page "/menu"
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@inject AuthService AuthService
+
+<div class="home-container">
+    <div class="box">
+        <h2>🩺 Sistema de Saúde</h2>
+
+        @if (AuthService.IsAuthenticated)
+        {
+            <p>Bem-vindo, @AuthService.UsuarioLogado.Nome</p>
+        }
+
+        <button class="btn" @onclick="IrParaPacientes">👥 Pacientes</button>
+        <button class="btn" @onclick="MostrarRelatorios">📄 Relatórios</button>
+        <button class="btn" @onclick="MostrarPerfil">👤 Perfil</button>
+
+        @if (!string.IsNullOrEmpty(Mensagem))
+        {
+            <div class="mensagem">@Mensagem</div>
+        }
+    </div>
+
+    <button class="bottom-left-button" @onclick="Sair">🔓 Sair</button>
+</div>
+
+@code {
+    private string? Mensagem;
+
+    void IrParaPacientes()
+    {
+        Navigation.NavigateTo("/pacientes");
+    }
+
+    void MostrarRelatorios()
+    {
+        Mensagem = "📄 Página de Relatórios em desenvolvimento.";
+    }
+
+    void MostrarPerfil()
+    {
+        Mensagem = "👤 Página de Perfil em desenvolvimento.";
+    }
+
+    void Sair()
+    {
+        AuthService.Logout();
+        Navigation.NavigateTo("/");
+    }
+}

@@ -1,0 +1,23 @@
+﻿@inherits LayoutComponentBase
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background-image: url('images/background.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .content-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+
+<div class="content-wrapper">
+    @Body
+</div>

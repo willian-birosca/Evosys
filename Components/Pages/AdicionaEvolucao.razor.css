@@ -1,0 +1,104 @@
+﻿.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: #004aad;
+        box-shadow: 0 0 8px rgba(0, 74, 173, 0.3);
+    }
+
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.box {
+    position: relative; /* Isso permite que o botão se posicione em relação à box */
+    background: rgba(255, 255, 255, 0.9);
+    width: 800px;
+    height: 700px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.bottom-right-button,
+.bottom-left-button,
+.btn {
+    background-color: #0d47a1;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+}
+
+    .bottom-right-button:hover,
+    .bottom-left-button:hover,
+    .btn:hover {
+        background-color: #08306b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn:disabled {
+        background-color: #B0BEC5;
+        color: #ECEFF1;
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.6;
+    }
+
+.bottom-right-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+
+.bottom-left-button {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+}
+
+.validation-message {
+    color: #d9534f;
+    font-size: 0.9em;
+    margin-top: 4px;
+}
+
+.cabecalho-box {
+    margin-bottom: 20px;
+}
+
+.dados-paciente {
+    display: flex;
+    gap: 40px;
+    margin-top: 10px;
+    font-size: 1rem;
+}

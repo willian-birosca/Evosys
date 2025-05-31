@@ -1,0 +1,142 @@
+﻿@page "/paciente/{CpfPaciente}/evolucao"
+@inject AppDbContext DbContext
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<div class="home-container">
+
+    @if (paciente == null)
+    {
+        <p>Carregando dados do paciente...</p>
+    }
+    else
+    {
+        <div class="box">
+            <h3>➕ Nova Evolução do Paciente</h3>
+            <h4>👤 @paciente.Nome</h4>
+            <p><strong>CPF:</strong> @paciente.Cpf</p>
+
+            <EditForm Model="@novaEvolucao" OnValidSubmit="SalvarEvolucao">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label>Setor:</label>
+                    <InputSelect class="form-control" @bind-Value="novaEvolucao.Setor">
+                        <option value="">Selecione um setor</option>
+                        @foreach (var setor in setores)
+                        {
+                            <option value="@setor">@setor</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="form-group">
+                    <label>Gravidade do Paciente:</label>
+                    <InputSelect class="form-control" @bind-Value="gravidadeTemporaria">
+                        <option value="Leve">Leve</option>
+                        <option value="Moderada">Moderada</option>
+                        <option value="Grave">Grave</option>
+                        <option value="Crítica">Crítica</option>
+                    </InputSelect>
+                </div>
+
+                <div class="form-group">
+                    <label>Sintomas:</label>
+                    <InputTextArea class="form-control" @bind-Value="novaEvolucao.Sintomas" />
+                </div>
+
+                <div class="form-group">
+                    <label>Intervenção:</label>
+                    <InputTextArea class="form-control" @bind-Value="novaEvolucao.Intervencao" />
+                </div>
+
+                <div class="form-group">
+                    <label>Observação:</label>
+                    <InputTextArea class="form-control" @bind-Value="novaEvolucao.Observacao" />
+                </div>
+
+                <!-- Campo escondido para CpfProfissional -->
+                <InputText type="hidden" @bind-Value="novaEvolucao.CpfProfissional" />
+                <br />
+
+                <button type="submit" class="btn">💾 Salvar</button>
+                <button type="button" class="btn" @onclick="Voltar">🔙 Cancelar</button>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string CpfPaciente
+    {
+        get; set;
+    }
+
+    Paciente paciente;
+    EvolucaoPorPaciente novaEvolucao = new();
+    string gravidadeTemporaria;
+
+    List<string> setores = new()
+    {
+        "Emergência", "UTI", "Enfermaria", "Centro Cirúrgico", "Pediatria", "Ambulatório", "Obstetrícia"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        paciente = await DbContext.Pacientes.FindAsync(CpfPaciente);
+
+        if (paciente == null)
+        {
+            Navigation.NavigateTo("/pacientes");
+            return;
+        }
+
+        var usuarioLogado = AuthService.GetUsuarioLogado();
+        if (usuarioLogado == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        gravidadeTemporaria = paciente.Gravidade;
+
+        novaEvolucao = new EvolucaoPorPaciente
+            {
+                CpfPaciente = CpfPaciente,
+                DataEvolucao = DateTime.Now,
+                CpfProfissional = usuarioLogado.Cpf,
+                ProfissionalDeSaude = usuarioLogado
+            };
+    }
+
+    async Task SalvarEvolucao()
+    {
+        var usuarioLogado = AuthService.GetUsuarioLogado();
+
+        if (usuarioLogado == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        novaEvolucao.CpfProfissional = usuarioLogado.Cpf;
+        novaEvolucao.ProfissionalDeSaude = usuarioLogado;
+
+        paciente.Gravidade = gravidadeTemporaria;
+
+        DbContext.EvolucoesPorPaciente.Add(novaEvolucao);
+        DbContext.Pacientes.Update(paciente);
+        await DbContext.SaveChangesAsync();
+
+        Navigation.NavigateTo($"/paciente/{CpfPaciente}");
+    }
+
+    void Voltar()
+    {
+        Navigation.NavigateTo($"/paciente/{CpfPaciente}");
+    }
+}

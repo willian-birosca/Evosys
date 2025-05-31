@@ -1,0 +1,98 @@
+﻿.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('images/background.jpg');
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.box {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    width: 360px;
+}
+
+.auth-options {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1.5rem;
+}
+
+    .auth-options .btn {
+        flex: 1;
+        margin: 0 0.25rem;
+        padding: 0.75rem 0;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+        .auth-options .btn.active {
+            background: #0275d8;
+            color: white;
+            border-color: #025aa5;
+        }
+
+        .auth-options .btn.inactive {
+            background: #e7e7e7;
+            color: #555;
+        }
+
+.form-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+    .form-group label {
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+.form-control {
+    padding: 0.6rem 0.8rem;
+    border: 1.8px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0275d8;
+        box-shadow: 0 0 6px rgba(2, 117, 216, 0.4);
+    }
+
+.btn {
+    background: #0275d8;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .btn:hover:not(:disabled) {
+        background: #025aa5;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+.error-message {
+    margin-top: 1rem;
+    color: #d9534f;
+    font-weight: 600;
+    text-align: center;
+}

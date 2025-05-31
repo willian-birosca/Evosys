@@ -1,0 +1,268 @@
+﻿@page "/"
+@inject AppDbContext DbContext
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+<div class="home-container">
+    <div class="box">
+        <div class="auth-options">
+            <button class="btn @(isRegister ? "inactive" : "active")" @onclick="ShowLoginForm">Login</button>
+            <button class="btn @(isRegister ? "active" : "inactive")" @onclick="ShowRegisterForm">Cadastro</button>
+        </div>
+
+        @if (isRegister)
+        {
+            <EditForm Model="registroModel" OnValidSubmit="SubmitRegister">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <InputText id="cpf" @bind-Value="registroModel.Cpf" placeholder="CPF" class="form-control" />
+                    <ValidationMessage For="@(() => registroModel.Cpf)" />
+                </div>
+
+                <div class="form-group">
+                    <InputText id="email" @bind-Value="registroModel.Email" placeholder="Email" class="form-control" />
+                    <ValidationMessage For="@(() => registroModel.Email)" />
+                </div>
+
+                <div class="form-group">
+                    <InputText id="nome" @bind-Value="registroModel.Nome" placeholder="Nome" class="form-control" />
+                    <ValidationMessage For="@(() => registroModel.Nome)" />
+                </div>
+
+                <div class="form-group">
+                    <InputText id="senha" @bind-Value="registroModel.Senha" type="password" placeholder="Senha" class="form-control" />
+                    <ValidationMessage For="@(() => registroModel.Senha)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="sexo">Sexo</label>
+                    <InputSelect id="sexo" @bind-Value="registroModel.Sexo" class="form-control">
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Outro">Outro</option>
+                    </InputSelect>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargo">Cargo</label>
+                    <InputSelect id="cargo" @bind-Value="registroModel.Cargo" class="form-control">
+                        <option value="">Selecione um cargo</option>
+                        <option value="Médico">Médico</option>
+                        <option value="Enfermeiro">Enfermeiro</option>
+                        <option value="Técnico de Enfermagem">Técnico de Enfermagem</option>
+                        <option value="Fisioterapeuta">Fisioterapeuta</option>
+                        <option value="Nutricionista">Nutricionista</option>
+                        <option value="Psicólogo">Psicólogo</option>
+                        <option value="Farmacêutico">Farmacêutico</option>
+                        <option value="Assistente Social">Assistente Social</option>
+                        <option value="Terapeuta Ocupacional">Terapeuta Ocupacional</option>
+                        <option value="Outro">Outro</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => registroModel.Cargo)" />
+                </div>
+
+                <div class="form-group">
+                    <InputText id="endereco" @bind-Value="registroModel.Endereco" placeholder="Endereço" class="form-control" />
+                    <ValidationMessage For="@(() => registroModel.Endereco)" />
+                </div>
+
+                <button type="submit" class="btn" disabled="@isProcessing">Registrar</button>
+
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="error-message">@message</div>
+                }
+            </EditForm>
+        }
+        else
+        {
+            <EditForm Model="loginModel" OnValidSubmit="SubmitLogin">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <InputText id="emailLogin" @bind-Value="loginModel.Email" placeholder="Email" class="form-control" />
+                    <ValidationMessage For="@(() => loginModel.Email)" />
+                </div>
+
+                <div class="form-group">
+                    <InputText id="senhaLogin" @bind-Value="loginModel.Senha" type="password" placeholder="Senha" class="form-control" />
+                    <ValidationMessage For="@(() => loginModel.Senha)" />
+                </div>
+
+                <button type="submit" class="btn" disabled="@isProcessing">Entrar</button>
+
+                @if (!string.IsNullOrEmpty(authMens))
+                {
+                    <div class="error-message">@authMens</div>
+                }
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    private bool isRegister = false;
+    private bool isProcessing = false;
+    private string? message;
+    private string? authMens;
+
+    private RegistroModel registroModel = new() { Sexo = "Masculino" };
+    private LoginModel loginModel = new();
+
+    private async Task SubmitLogin()
+    {
+        isProcessing = true;
+        authMens = null;
+
+        var profissional = await DbContext.ProfissionaisDeSaude
+            .FirstOrDefaultAsync(p => p.Email == loginModel.Email);
+
+        if (profissional == null)
+        {
+            authMens = "Email não encontrado.";
+        }
+        else if (profissional.Senha != loginModel.Senha)
+        {
+            authMens = "Senha incorreta.";
+        }
+        else
+        {
+            AuthService.Login(profissional);
+            Navigation.NavigateTo("/menu");
+        }
+
+        isProcessing = false;
+    }
+
+    private async Task SubmitRegister()
+    {
+        isProcessing = true;
+        message = null;
+
+        bool cpfExists = await DbContext.ProfissionaisDeSaude.AnyAsync(p => p.Cpf == registroModel.Cpf);
+        bool emailExists = await DbContext.ProfissionaisDeSaude.AnyAsync(p => p.Email == registroModel.Email);
+
+        if (cpfExists)
+        {
+            message = "CPF já cadastrado.";
+            isProcessing = false;
+            return;
+        }
+
+        if (emailExists)
+        {
+            message = "Email já cadastrado.";
+            isProcessing = false;
+            return;
+        }
+
+        var profissional = new ProfissionalDeSaude(
+            registroModel.Cpf!,
+            registroModel.Nome!,
+            registroModel.Email!,
+            idade: 0,
+            registroModel.Sexo,
+            registroModel.Senha!,
+            registroModel.Endereco!,
+            situacao: "1",
+            registroModel.Cargo!,
+            nivelPermissao: 0);
+
+        DbContext.ProfissionaisDeSaude.Add(profissional);
+        await DbContext.SaveChangesAsync();
+
+        AuthService.Login(profissional);
+
+        Navigation.NavigateTo("/pacientes");
+        isProcessing = false;
+    }
+
+    private void ShowLoginForm()
+    {
+        isRegister = false;
+        ClearMessages();
+    }
+
+    private void ShowRegisterForm()
+    {
+        isRegister = true;
+        ClearMessages();
+    }
+
+    private void ClearMessages()
+    {
+        message = null;
+        authMens = null;
+        isProcessing = false;
+
+        registroModel = new RegistroModel { Sexo = "Masculino" };
+        loginModel = new LoginModel();
+    }
+
+    public class RegistroModel
+    {
+        [Required(ErrorMessage = "CPF é obrigatório")]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "CPF deve conter 11 dígitos numéricos")]
+        public string? Cpf
+        {
+            get; set;
+        }
+
+        [Required(ErrorMessage = "Nome é obrigatório")]
+        [MinLength(3, ErrorMessage = "Nome deve ter no mínimo 3 caracteres")]
+        public string? Nome
+        {
+            get; set;
+        }
+
+        [Required(ErrorMessage = "Email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string? Email
+        {
+            get; set;
+        }
+
+        [Required(ErrorMessage = "Senha é obrigatória")]
+        [MinLength(6, ErrorMessage = "Senha deve ter no mínimo 6 caracteres")]
+        public string? Senha
+        {
+            get; set;
+        }
+
+        [Required(ErrorMessage = "Endereço é obrigatório")]
+        public string? Endereco
+        {
+            get; set;
+        }
+
+        [Required(ErrorMessage = "Cargo é obrigatório")]
+        public string? Cargo
+        {
+            get; set;
+        }
+
+        public string Sexo { get; set; } = "Masculino";
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string? Email
+        {
+            get; set;
+        }
+
+        [Required(ErrorMessage = "Senha é obrigatória")]
+        public string? Senha
+        {
+            get; set;
+        }
+    }
+}

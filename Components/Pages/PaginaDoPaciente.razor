@@ -1,0 +1,105 @@
+﻿@page "/paciente/{CpfPaciente}"
+@inject AppDbContext DbContext
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<div class="home-container">
+    <div class="box">
+        <div class="cabecalho-box">
+            <h3>👤 Perfil do Paciente</h3>
+
+            @if (paciente != null)
+            {
+                <div class="cabecalho-paciente">
+                    <h2>@paciente.Nome</h2>
+                    <div class="dados-paciente">
+                        <div><strong>CPF:</strong> @paciente.Cpf</div>
+                        <div><strong>Idade:</strong> @(CalcularIdade(paciente.DataNascimento)) anos</div>
+                        <div><strong>Sexo:</strong> @paciente.Sexo</div>
+                        <div><strong>Gravidade:</strong> @paciente.Gravidade</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p>⚠️ Paciente não encontrado.</p>
+            }
+        </div>
+
+        <div class="scroll-box">
+            @if (paciente != null)
+            {
+                <h4>📜 Histórico de Evoluções</h4>
+
+                @if (evolucoes == null || !evolucoes.Any())
+                {
+                    <p>⚠️ Nenhuma evolução registrada.</p>
+                }
+                else
+                {
+                    foreach (var evo in evolucoes.OrderByDescending(e => e.DataEvolucao))
+                    {
+                        <div class="evolucao-card">
+                            <p><strong>Data:</strong> @evo.DataEvolucao.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p><strong>Profissional:</strong> @evo.ProfissionalDeSaude?.Nome</p>
+                            <p><strong>Setor:</strong> @evo.Setor</p>
+                            <p><strong>Sintomas:</strong> @evo.Sintomas</p>
+                            <p><strong>Intervenção:</strong> @evo.Intervencao</p>
+                            <p><strong>Observações:</strong> @evo.Observacao</p>
+                        </div>
+                        <hr />
+                    }
+                }
+            }
+        </div>
+
+        <button class="bottom-right-button" @onclick="NovaEvolucao">➕ Nova Evolução</button>
+        <button class="bottom-left-button" @onclick="VoltarParaPacientes">🔙 Voltar</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string CpfPaciente
+    {
+        get; set;
+    }
+
+    Paciente paciente;
+    List<EvolucaoPorPaciente> evolucoes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        paciente = await DbContext.Pacientes
+            .FirstOrDefaultAsync(p => p.Cpf == CpfPaciente);
+
+        if (paciente == null)
+            return;
+
+        evolucoes = await DbContext.EvolucoesPorPaciente
+            .Where(e => e.CpfPaciente == CpfPaciente)
+            .Include(e => e.ProfissionalDeSaude)
+            .ToListAsync();
+    }
+
+    void NovaEvolucao()
+    {
+        Navigation.NavigateTo($"/paciente/{CpfPaciente}/evolucao");
+    }
+
+    void VoltarParaPacientes()
+    {
+        Navigation.NavigateTo("/pacientes");
+    }
+
+    int CalcularIdade(DateTime dataNascimento)
+    {
+        var hoje = DateTime.Today;
+        var idade = hoje.Year - dataNascimento.Year;
+        if (dataNascimento.Date > hoje.AddYears(-idade))
+            idade--;
+        return idade;
+    }
+}

@@ -1,0 +1,165 @@
+﻿html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Cabeçalho do perfil do paciente */
+.cabecalho-box {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Box com rolagem interna */
+.box {
+    position: relative;
+    background: rgba(255, 255, 255, 0.95);
+    width: 800px;
+    height: 700px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Conteúdo com rolagem */
+.scroll-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 10px 80px; /* espaço inferior para botões */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Cartão de evolução */
+.evolucao-card {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.btn {
+    margin-right: 10px;
+}
+
+/* Títulos */
+h3 {
+    margin-bottom: 30px;
+}
+
+h4 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+/* Botões com estilo */
+.bottom-right-button,
+.bottom-left-button,
+.btn {
+    background-color: #0d47a1;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+}
+
+    .bottom-right-button:hover,
+    .bottom-left-button:hover,
+    .btn:hover {
+        background-color: #08306b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn:disabled {
+        background-color: #B0BEC5;
+        color: #ECEFF1;
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.6;
+    }
+
+/* Botões absolutos */
+.bottom-right-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+
+.bottom-left-button {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+}
+
+/* Cabeçalho de dados do paciente */
+.cabecalho-paciente {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+}
+
+    .cabecalho-paciente h2 {
+        margin: 0;
+    }
+
+/* Estilo dos dados individuais */
+.dados-paciente {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+    .dados-paciente div {
+        text-align: center;
+    }
+
+        .dados-paciente div strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+/* Estilo para mensagens de erro */
+.error-message {
+    color: #E53E3E;
+    font-size: 14px;
+    margin-top: 5px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .error-message:not(:empty) {
+        visibility: visible;
+    }
+
+.error-container {
+    min-height: 16px;
+}

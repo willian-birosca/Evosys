@@ -1,0 +1,12 @@
+# Ignore a pasta do Visual Studio
+.vs/
+*.user
+*.suo
+
+# Ignore arquivos de build
+bin/
+obj/
+
+# Ignore outros arquivos gerados
+*.log
+*.tmp

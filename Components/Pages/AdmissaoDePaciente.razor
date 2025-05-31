@@ -1,0 +1,232 @@
+﻿@page "/admissao"
+@inject AppDbContext DbContext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<div class="home-container">
+    <div class="box">
+
+        <!-- CPF -->
+        <div class="form-group">
+            <input type="text" id="cpf" @bind="cpf" @oninput="ValidateCpf" placeholder="CPF" aria-label="CPF" />
+            @if (!string.IsNullOrEmpty(criticaCpf))
+            {
+                <div class="error-message">@criticaCpf</div>
+            }
+        </div>
+
+        <!-- Nome -->
+        <div class="form-group">
+            <input type="text" id="nome" @bind="nome" @oninput="ValidateNome" placeholder="Nome" aria-label="Nome" />
+            @if (!string.IsNullOrEmpty(criticaNome))
+            {
+                <div class="error-message">@criticaNome</div>
+            }
+        </div>
+
+        <!-- Data de Nascimento -->
+        <div class="form-group">
+            <label for="dataNascimento">Data de Nascimento</label>
+            <input type="date" id="dataNascimento" @bind="dataNascimento" @oninput="ValidateDataNascimento" />
+            @if (!string.IsNullOrEmpty(criticaDataNascimento))
+            {
+                <div class="error-message">@criticaDataNascimento</div>
+            }
+        </div>
+
+        <!-- Sexo -->
+        <div class="form-group">
+            <label for="sexo">Sexo</label>
+            <select id="sexo" class="form-control" @onchange="ValidateSexo">
+                <option value="">Selecione</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outro">Outro</option>
+            </select>
+            @if (!string.IsNullOrEmpty(criticaSexo))
+            {
+                <div class="error-message">@criticaSexo</div>
+            }
+        </div>
+
+        <!-- Gravidade -->
+        <div class="form-group">
+            <label for="gravidade">Gravidade</label>
+            <select id="gravidade" class="form-control" @onchange="ValidateGravidade">
+                <option value="">Selecione</option>
+                <option value="Leve">Leve</option>
+                <option value="Moderada">Moderada</option>
+                <option value="Grave">Grave</option>
+            </select>
+            @if (!string.IsNullOrEmpty(criticaGravidade))
+            {
+                <div class="error-message">@criticaGravidade</div>
+            }
+        </div>
+
+        <div class="form-group">
+            <input type="text" id="endereco" @bind="endereco" @oninput="ValidateEndereco" placeholder="Endereço" aria-label="Endereço" />
+            @if (!string.IsNullOrEmpty(criticaEndereco))
+            {
+                <div class="error-message">@criticaEndereco</div>
+            }
+        </div>
+
+        <!-- Botão -->
+        <div style="text-align: center;">
+            <button class="bottom-right-button" @onclick="ConcluirAdmissao" disabled="@isRegisterDisabled">
+                Admitir paciente
+            </button>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="bottom-left-button" @onclick="CancelarAdmissao">
+                Cancelar admissao
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    string? cpf, nome, sexo, gravidade, endereco;
+    string? criticaCpf, criticaNome, criticaSexo, criticaGravidade, criticaDataNascimento, criticaEndereco;
+    DateTime dataNascimento = DateTime.Today;
+    DateTime dataAdmissao = DateTime.Now;
+    bool isRegisterDisabled = true; 
+
+    private void CancelarAdmissao()
+    {
+        ClearFields();
+        Navigation.NavigateTo("/pacientes");
+    }
+
+    private async Task ConcluirAdmissao()
+    {
+        if (!isRegisterDisabled)
+        {
+            Console.WriteLine("MÉTODO CONCLUIR ADMISSÃO CHAMADO");
+            var paciente = new Paciente(cpf, nome, dataNascimento, sexo, dataAdmissao, gravidade, endereco);
+            DbContext.Pacientes.Add(paciente);
+            await DbContext.SaveChangesAsync();
+            Navigation.NavigateTo("/pacientes");
+        }
+        else
+        {
+            Console.WriteLine("Botão ainda desabilitado");
+        }
+    }
+
+    private void ValidateCpf(ChangeEventArgs e)
+    {
+        cpf = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(cpf))
+            criticaCpf = "CPF é obrigatório.";
+        else if (!System.Text.RegularExpressions.Regex.IsMatch(cpf, @"^\d{11}$"))
+            criticaCpf = "CPF deve conter 11 dígitos numéricos.";
+        else
+            criticaCpf = null;
+
+        ValidateButtonState();
+        StateHasChanged();
+    }
+
+    private void ValidateNome(ChangeEventArgs e)
+    {
+        nome = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(nome))
+            criticaNome = "Nome é obrigatório.";
+        else if (nome.Length < 3)
+            criticaNome = "Nome deve ter pelo menos 3 caracteres.";
+        else
+            criticaNome = null;
+
+        ValidateButtonState();
+        StateHasChanged();
+    }
+
+    private void ValidateDataNascimento(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var parsedDate))
+        {
+            dataNascimento = parsedDate;
+            var idade = CalcularIdade(dataNascimento);
+
+            if (idade < 0 || idade > 120)
+                criticaDataNascimento = "Data de nascimento inválida. Verifique.";
+            else
+                criticaDataNascimento = null;
+        }
+        else
+        {
+            criticaDataNascimento = "Data de nascimento inválida.";
+        }
+        ValidateButtonState();
+        StateHasChanged();
+    }
+
+    private void ValidateSexo(ChangeEventArgs e)
+    {
+        sexo = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(sexo))
+            criticaSexo = "Sexo é obrigatório.";
+        else
+            criticaSexo = null;
+
+        ValidateButtonState();
+        StateHasChanged();
+    }
+
+    private void ValidateGravidade(ChangeEventArgs e)
+    {
+        gravidade = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(gravidade))
+            criticaGravidade = "Gravidade é obrigatória.";
+        else
+            criticaGravidade = null;
+
+        ValidateButtonState();
+        StateHasChanged();
+    }
+
+    private void ValidateEndereco(ChangeEventArgs e)
+    {
+        endereco = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(endereco))
+            criticaEndereco = "Endereço é obrigatório.";
+        else if (endereco.Length < 5)
+            criticaEndereco = "Endereço deve ter pelo menos 5 caracteres.";
+        else
+            criticaEndereco = null;
+
+        ValidateButtonState();
+        StateHasChanged();
+    }
+
+    private void ValidateButtonState()
+    {
+        isRegisterDisabled =
+            string.IsNullOrWhiteSpace(cpf) || !string.IsNullOrEmpty(criticaCpf) ||
+            string.IsNullOrWhiteSpace(nome) || !string.IsNullOrEmpty(criticaNome) ||
+            string.IsNullOrWhiteSpace(sexo) || !string.IsNullOrEmpty(criticaSexo) ||
+            string.IsNullOrWhiteSpace(gravidade) || !string.IsNullOrEmpty(criticaGravidade) ||
+            string.IsNullOrWhiteSpace(endereco) || !string.IsNullOrEmpty(criticaEndereco) ||
+            !string.IsNullOrEmpty(criticaDataNascimento);
+    }
+
+    private int CalcularIdade(DateTime nascimento)
+    {
+        var hoje = DateTime.Today;
+        var idade = hoje.Year - nascimento.Year;
+        if (nascimento.Date > hoje.AddYears(-idade)) idade--;
+        return idade;
+    }
+
+    private void ClearFields()
+    {
+        cpf = nome = sexo = gravidade = null;
+        criticaCpf = criticaNome = criticaSexo = criticaGravidade = criticaDataNascimento = null;
+        isRegisterDisabled = true;
+    }
+}
