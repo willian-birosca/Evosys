@@ -1,0 +1,137 @@
+﻿@page "/relatorio-pacientes"
+@inject AppDbContext DbContext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<div class="home-container">
+    <!-- Caixa lateral de filtros -->
+    <div class="side-box">
+        <div class="cabecalho-box">🔍 Filtros</div>
+
+        <div class="form-group">
+            <label>Gravidade:</label>
+            <InputSelect class="form-control" @bind-Value="gravidadeSelecionada">
+                <option value="">-- Todos --</option>
+                @foreach (var nivel in gravidadesDisponiveis)
+                {
+                    <option value="@nivel">@nivel</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label>Sexo:</label>
+            <InputSelect class="form-control" @bind-Value="sexoSelecionado">
+                <option value="">-- Todos --</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label>Idade Mínima:</label>
+            <InputNumber @bind-Value="idadeMinima" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Idade Máxima:</label>
+            <InputNumber @bind-Value="idadeMaxima" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Nome:</label>
+            <InputText @bind-Value="nomeFiltro" class="form-control" />
+        </div>
+    </div>
+
+    <!-- Caixa principal -->
+    <div class="box">
+        <div class="cabecalho-box">📋 Relatório de Pacientes</div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>CPF</th>
+                        <th>Nome</th>
+                        <th>Idade</th>
+                        <th>Sexo</th>
+                        <th>Gravidade</th>
+                        <th>Data Admissão</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var paciente in pacientesFiltrados)
+                    {
+                        <tr>
+                            <td>@paciente.Cpf</td>
+                            <td>@paciente.Nome</td>
+                            <td>@paciente.CalcularIdade()</td>
+                            <td>@paciente.Sexo</td>
+                            <td>@paciente.Gravidade</td>
+                            <td>@paciente.DataAdmissao.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botões fixos -->
+        <button class="bottom-left-button" @onclick="VoltarParaMenu">🔙 Sair</button>
+        <button class="bottom-right-button" @onclick="FiltrarPacientes">🔍 Atualizar</button>
+    </div>
+</div>
+
+@code {
+    private string gravidadeSelecionada = "";
+    private string sexoSelecionado = "";
+    private string nomeFiltro = "";
+    private int? idadeMinima;
+    private int? idadeMaxima;
+
+    private List<string> gravidadesDisponiveis = new();
+    private List<Paciente> pacientesFiltrados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        gravidadesDisponiveis = await DbContext.Pacientes
+            .Select(p => p.Gravidade)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToListAsync();
+
+        await FiltrarPacientes();
+    }
+
+    private async Task FiltrarPacientes()
+    {
+        var query = DbContext.Pacientes.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(gravidadeSelecionada))
+            query = query.Where(p => p.Gravidade == gravidadeSelecionada);
+
+        if (!string.IsNullOrWhiteSpace(sexoSelecionado))
+            query = query.Where(p => p.Sexo == sexoSelecionado);
+
+        if (!string.IsNullOrWhiteSpace(nomeFiltro))
+            query = query.Where(p => p.Nome.Contains(nomeFiltro));
+
+        var lista = await query.ToListAsync();
+
+        pacientesFiltrados = lista
+            .Where(p =>
+            {
+                var idade = p.CalcularIdade();
+                return (!idadeMinima.HasValue || idade >= idadeMinima.Value) &&
+                       (!idadeMaxima.HasValue || idade <= idadeMaxima.Value);
+            })
+            .OrderBy(p => p.Nome)
+            .ToList();
+    }
+
+    private void VoltarParaMenu()
+    {
+        Navigation.NavigateTo("/menu");
+    }
+}

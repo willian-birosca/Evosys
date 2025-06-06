@@ -3,42 +3,15 @@
 public class Paciente
 {
     [Key]
-    public string Cpf
-    {
-        get; set;
-    } // Chave primária
-    public bool Ativo
-    {
-        get; set;
-    }
-    public string Nome
-    {
-        get; set;
-    }
-    public DateTime DataNascimento
-    {
-        get; set;
-    } // 🔥 Troca Idade por Data de Nascimento
-    public string Sexo
-    {
-        get; set;
-    }
-    public string Endereco
-    {
-        get; set;
-    }
-    public DateTime DataAdmissao
-    {
-        get; set;
-    }
-    public DateTime DataAlta
-    {
-        get; set;
-    }
-    public string Gravidade
-    {
-        get; set;
-    }
+    public string Cpf                          {get; set;} // Chave primária
+    public bool Ativo                          {get; set;}
+    public string Nome                         {get; set;}
+    public DateTime DataNascimento             {get; set;} // 🔥 Troca Idade por Data de Nascimento
+    public string Sexo                         {get; set;}
+    public string Endereco                     {get; set;}
+    public DateTime DataAdmissao               {get; set;}
+    public DateTime DataAlta                   {get; set;}
+    public string Gravidade                    {get; set;}
 
     public ICollection<EvolucaoPorPaciente> Evolucoes { get; set; } = new List<EvolucaoPorPaciente>();
 
